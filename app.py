@@ -1,4 +1,4 @@
-# WHISKY PRO DASHBOARD (FULLSTACK SINGLE FILE)
+# WHISKY PRO DASHBOARD (FIXED + RESPONSIVE)
 
 from flask import Flask, request, jsonify, render_template_string
 from whisky_engine import process_command
@@ -7,161 +7,127 @@ app = Flask(__name__)
 
 HTML_UI = """
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Whisky AI</title>
 
 <style>
 body {
     margin: 0;
-    font-family: 'Inter', sans-serif;
-    background: radial-gradient(circle at top, #0f172a, #020617);
+    font-family: Arial;
+    background: #020617;
     color: white;
 }
 
 .container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     height: 100vh;
 }
 
-.glass {
+.panel {
     width: 90%;
-    max-width: 1000px;
+    max-width: 900px;
     padding: 25px;
-    border-radius: 30px;
+    border-radius: 20px;
     background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-    animation: fadeIn 1s ease;
-}
-
-h1 {
-    text-align: center;
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-.sub {
-    text-align: center;
-    font-size: 14px;
-    opacity: 0.6;
-    margin-bottom: 20px;
+    backdrop-filter: blur(15px);
 }
 
 textarea {
     width: 100%;
-    height: 90px;
-    border-radius: 20px;
+    height: 80px;
+    border-radius: 10px;
     border: none;
-    padding: 15px;
-    background: rgba(255,255,255,0.08);
+    padding: 10px;
+    margin-top: 10px;
+    background: rgba(255,255,255,0.1);
     color: white;
-    outline: none;
-    transition: 0.3s;
-}
-
-textarea:focus {
-    background: rgba(255,255,255,0.12);
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-    flex-wrap: wrap;
 }
 
 button {
-    padding: 10px 18px;
-    border-radius: 20px;
+    margin-top: 10px;
+    padding: 10px 15px;
     border: none;
-    cursor: pointer;
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    border-radius: 10px;
+    background: #3b82f6;
     color: white;
-    transition: 0.3s;
+    cursor: pointer;
 }
 
 button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 10px 20px rgba(59,130,246,0.4);
-}
-
-.quick {
-    background: rgba(255,255,255,0.08);
+    background: #2563eb;
 }
 
 .output {
     margin-top: 20px;
-    padding: 20px;
-    border-radius: 20px;
-    background: rgba(255,255,255,0.06);
-    max-height: 350px;
-    overflow-y: auto;
+    padding: 15px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.08);
     white-space: pre-wrap;
-    animation: fadeIn 0.5s ease;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
-.copy {
-    margin-top: 10px;
-    background: #10b981;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.loading {
+    opacity: 0.6;
+    font-style: italic;
 }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="container">
-    <div class="glass">
-        <h1>🥃 Whisky AI</h1>
-        <div class="sub">Your Viral Content Command Center</div>
+    <div class="panel">
+        <h2>🥃 Whisky AI</h2>
 
-        <textarea id="input" placeholder="Type: /viral pack money mindset"></textarea>
+        <textarea id="input" placeholder="/viral pack money mindset"></textarea>
 
-        <div class="actions">
+        <div>
             <button onclick="run()">Run</button>
-            <button class="quick" onclick="setCmd('/hooks 30 savage mindset')">Hooks</button>
-            <button class="quick" onclick="setCmd('/script lazy people roast')">Script</button>
-            <button class="quick" onclick="setCmd('/ideas faceless reels')">Ideas</button>
-            <button class="quick" onclick="setCmd('/viral pack success niche')">Viral Pack</button>
+            <button onclick="quick('/hooks 20 savage')">Hooks</button>
+            <button onclick="quick('/script lazy roast')">Script</button>
+            <button onclick="quick('/viral pack success')">Viral Pack</button>
         </div>
 
-        <div class="output" id="output"></div>
-        <button class="copy" onclick="copyOutput()">Copy Output</button>
+        <div id="output" class="output">Ready...</div>
     </div>
 </div>
 
 <script>
-function setCmd(cmd) {
-    document.getElementById('input').value = cmd;
+function quick(cmd) {
+    document.getElementById("input").value = cmd;
 }
 
 async function run() {
-    let input = document.getElementById('input').value;
+    const input = document.getElementById("input").value;
+    const output = document.getElementById("output");
 
-    let res = await fetch('/command', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({input})
-    });
+    if (!input) {
+        output.innerText = "Enter a command bro...";
+        return;
+    }
 
-    let data = await res.json();
-    document.getElementById('output').innerText = data.output;
-}
+    output.innerHTML = "<span class='loading'>Whisky is thinking... ⏳</span>";
 
-function copyOutput() {
-    let text = document.getElementById('output').innerText;
-    navigator.clipboard.writeText(text);
+    try {
+        const res = await fetch("/command", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({input})
+        });
+
+        const data = await res.json();
+
+        console.log("Response:", data);  // DEBUG
+
+        output.innerText = data.output || "No response";
+    } catch (err) {
+        console.error(err);
+        output.innerText = "Error connecting to server ⚠️";
+    }
 }
 </script>
 
@@ -178,10 +144,11 @@ def command():
     data = request.json
     user_input = data.get("input")
 
-    if not user_input:
-        return jsonify({"output": "No input provided"})
+    print("Incoming:", user_input)  # DEBUG
 
     result = process_command(user_input)
+
+    print("Output:", result)  # DEBUG
 
     return jsonify({"output": result})
 
