@@ -1,4 +1,4 @@
-<!-- WHISKY PRO DASHBOARD (FULLSTACK SINGLE FILE) -->
+# WHISKY PRO DASHBOARD (FULLSTACK SINGLE FILE)
 
 from flask import Flask, request, jsonify, render_template_string
 from whisky_engine import process_command
@@ -11,7 +11,7 @@ HTML_UI = """
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Whisky AI Pro</title>
+<title>Whisky AI</title>
 
 <style>
 body {
@@ -120,6 +120,7 @@ button:hover {
 </head>
 
 <body>
+
 <div class="container">
     <div class="glass">
         <h1>🥃 Whisky AI</h1>
@@ -176,6 +177,9 @@ def home():
 def command():
     data = request.json
     user_input = data.get("input")
+
+    if not user_input:
+        return jsonify({"output": "No input provided"})
 
     result = process_command(user_input)
 
