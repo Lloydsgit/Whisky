@@ -1,7 +1,7 @@
+import os
 from openai import OpenAI
-from prompts import WHISKY_SYSTEM_PROMPT
 
-client = OpenAI(api_key="YOUR_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def process_command(user_input):
     if "/hooks" in user_input:
